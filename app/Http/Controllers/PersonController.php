@@ -2,18 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Person;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class PersonController extends Controller
 {
+    public function __construct(private Person $person)
+    {
+        
+    }    
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        if(!$request->query('maxAge') && !$request->query('cpfCnpj')) {
+            $persons = Person::all();
+            return response()->json($persons);
+        }
+        
+        
+        return response()->json($request->query('maxAge'));
     }
 
     /**
@@ -24,7 +36,10 @@ class PersonController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->all();
+        $data["password"] = Hash::make($request->password);
+        $person = Person::create($data);
+        return response()->json($person, 201);
     }
 
     /**
@@ -35,7 +50,12 @@ class PersonController extends Controller
      */
     public function show($id)
     {
-        //
+        $person = Person::find($id);
+
+        if(!$person) 
+            return response()->json(['message' => 'Registro não encontrado'], 404);
+        else
+            return response()->json($person); 
     }
 
     /**
@@ -47,7 +67,17 @@ class PersonController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $person = Person::find($id);
+        if(!$person) 
+            return response()->json(['message' => 'Registro não encontrado'], 404);
+        
+        $data = $request->all();
+
+        if($request->password) 
+            $data["password"] = Hash::make($request->password);
+        
+        $person->update($data);
+        return response()->json(['message' => 'Registro atualizado']);
     }
 
     /**
@@ -58,6 +88,12 @@ class PersonController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $person = Person::find($id);
+        if(!$person)
+            return response()->json(['message' => 'Registro não encontrado'], 404);
+        
+        $person->delete();
+
+        return response()->json(['message' => 'Registro deletado']);
     }
 }
