@@ -9,7 +9,7 @@ class Person extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name", "cpf/cnpj", "password", "phone", "birthDate"];
+    protected $fillable = ["name", "cpfCnpj", "password", "phone", "birthDate"];
 
     public $timestamps = false;
 

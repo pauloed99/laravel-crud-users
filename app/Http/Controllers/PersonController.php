@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Person;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class PersonController extends Controller
@@ -18,16 +19,37 @@ class PersonController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {
-        if(!$request->query('maxAge') && !$request->query('cpfCnpj')) {
+    {   
+        $cpfCnpj = $request->query('cpfCnpj');
+        $maxAge = $request->query('maxAge');
+
+        if(!$maxAge && !$cpfCnpj) {
             $persons = Person::all();
             return response()->json($persons);
         }
-        
-        
-        return response()->json($request->query('maxAge'));
-    }
 
+        if($cpfCnpj && $maxAge) {
+            $person = DB::table('people')->select()->where('cpfCnpj', $cpfCnpj)->get();
+            if($this->person->ageCalculator($person[0]->birthDate) <= $maxAge)
+                return response()->json($person);
+            return response()->json([]);
+        }
+        
+        if($cpfCnpj) {
+            $person = DB::table('people')->select()->where('cpfCnpj', $cpfCnpj)->get();
+            return response()->json($person);
+        } 
+
+        elseif($request->query('maxAge')) {
+            $persons = DB::table('people')->select()->get();
+            $personsByAge = [];
+            foreach ($persons as $value) {
+                if($this->person->ageCalculator($value->birthDate) <= $maxAge) 
+                    array_push($personsByAge, $value);
+            }
+            return response()->json($personsByAge);
+        }
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -35,7 +57,7 @@ class PersonController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {   
         $data = $request->all();
         $data["password"] = Hash::make($request->password);
         $person = Person::create($data);
