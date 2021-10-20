@@ -11,6 +11,8 @@ class Person extends Model
 
     protected $fillable = ["name", "cpfCnpj", "password", "phone", "birthDate"];
 
+    protected $hidden = ['password'];
+
     public $timestamps = false;
 
     function ageCalculator(string $birthDate) : int {
