@@ -32,7 +32,7 @@ class PersonController extends Controller
             $person = DB::table('people')->select([
                 'id','name','birthDate','phone'
             ])->where('cpfCnpj', $cpfCnpj)->get();
-            if($this->person->ageCalculator($person[0]->birthDate) <= $maxAge)
+            if(count($person) != 0 && $this->person->ageCalculator($person[0]->birthDate) <= $maxAge)
                 return response()->json($person);
             return response()->json([]);
         }
@@ -44,7 +44,7 @@ class PersonController extends Controller
             return response()->json($person);
         } 
 
-        elseif($request->query('maxAge')) {
+        if($request->query('maxAge')) {
             $persons = DB::table('people')->select(
                 ['id','name','birthDate','phone']
             )->get();
